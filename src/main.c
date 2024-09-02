@@ -80,6 +80,7 @@ int main() {
     // Send ICMP Packet
     send_icmp_echo_request(sockfd, &dest_addr, &icmp_hdr);
 
+    close(sockfd);
     return 0;
 }
 
