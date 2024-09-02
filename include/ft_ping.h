@@ -68,6 +68,21 @@ void handle_interrupt(int sig);
 void calculate_and_display_rtt_statistics(struct timeval *start, struct timeval *end, ping_stats_t *stats);
 void calculate_and_display_statistics(ping_stats_t *stats);
 
+/*
+    icmp.c
+*/
+void construct_icmp_echo_request(struct icmphdr *icmp_hdr, int sequence);
+void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, struct icmphdr *icmp_hdr);
+int receive_icmp_echo_reply(int sockfd, struct icmphdr *recv_icmp_hdr, struct sockaddr_in *src_addr, uint8_t *ttl);
 
+/*
+    checksum.c
+*/
+unsigned short checksum(void *b, int len);
+
+/*
+    parsing.c
+*/
+void parse_command_line(int ac, char **av, char **destination);
 
 #endif

@@ -19,13 +19,15 @@ void calculate_and_display_rtt_statistics(struct timeval *start, struct timeval 
     double rtt = ((seconds) * 1000 + useconds / 1000.0);
 
     // MAJ stats RTT
-    if (stats->rtt_min < 0 || rtt < stats->rtt_min) stats->rtt_min = rtt;
-    if (rtt > stats->rtt_max) stats->rtt_max = rtt;
+    if (stats->rtt_min < 0 || rtt < stats->rtt_min)
+        stats->rtt_min = rtt;
+    if (rtt > stats->rtt_max)
+        stats->rtt_max = rtt;
     stats->rtt_total += rtt;
     stats->rtt_sum_of_squares += rtt * rtt;
 
     stats->packets_received++;
-    printf("RTT: %.3f ms\n", rtt);
+    // printf("RTT: %.3f ms\n", rtt);
 }
 
 void calculate_and_display_statistics(ping_stats_t *stats) {
