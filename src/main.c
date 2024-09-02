@@ -1,5 +1,12 @@
 #include "../include/ft_ping.h"
 
+// volatile int running = 1;
+
+// void handle_interrupt(int sig) {
+//     (void)sig;
+//     running = 0;
+// }
+
 void check_root_privileges() {
     if (getuid() != 0) {
         fprintf(stderr, "Error: this program must be run as root.\n");
@@ -53,12 +60,60 @@ void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, struct ic
     }
 }
 
+double calculate_and_display_rtt(struct timeval *start, struct timeval *end) {
+    long seconds = end->tv_sec - start->tv_sec;
+    long useconds = end->tv_usec - start->tv_usec;
+
+    double mtime = ((seconds) * 1000 + useconds / 1000.0);
+
+    printf("RTTTTTTTTTTT: %f ms\n", mtime);
+
+    return mtime;
+}
+
+/*
+    @buffer : stock temporary data of network
+    @addr_len : stock len struct sockaddr_in
+
+    ignore the IP header (which is always present in a network packet) and concentrate solely on the ICMP header
+*/
+
+int receive_icmp_echo_reply(int sockfd, struct icmphdr *recv_icmp_hdr, struct sockaddr_in *src_addr, uint8_t *ttl) {
+    char buffer[1024];
+    socklen_t addr_len = sizeof(*src_addr);
+
+    int bytes_received = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)src_addr, &addr_len);
+    if (bytes_received < 0) {
+        perror("Error receiving ICMP packet");
+        return -1;
+    }
+
+    struct iphdr *ip_hdr = (struct iphdr *)buffer;
+    int ip_hdr_len = ip_hdr->ihl * 4; // ihl (Internet Header Length)
+    memcpy(recv_icmp_hdr, buffer + ip_hdr_len, sizeof(struct icmphdr));
+
+    *ttl = ip_hdr->ttl;
+    printf("TTL: %d\n", *ttl);
+
+    // memcpy(recv_icmp_hdr, buffer, sizeof(struct icmphdr));
+
+    return (recv_icmp_hdr->type == ICMP_ECHOREPLY) && (recv_icmp_hdr->un.echo.id == getpid());
+}
+
 int main() {
-    int sockfd, verbose;
+    int sockfd;//, verbose;
     char *destination = "8.8.8.8"; // test Google
     struct sockaddr_in dest_addr, src_addr; // IP Adress dest and src
     struct icmphdr icmp_hdr, recv_icmp_hdr; // Build and Analyse packets ICMP
     struct timeval start_time, end_time; // time
+    int sequence = 0;
+    stats.packets_sent = 0;
+    stats.packets_received = 0;
+    stats.rtt_min = -1;
+    stats.rtt_max = 0;
+    stats.rtt_total = 0;
+    stats.rtt_sum_of_squares = 0;
+    u_int8_t ttl;
 
     check_root_privileges();
     sockfd = create_raw_socket();
@@ -71,14 +126,36 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    // Build Packet ICMP
-    construct_icmp_echo_request(&icmp_hdr, 1);
+    signal(SIGINT, handle_interrupt);
 
-    // share time to RTT
-    gettimeofday(&start_time, NULL);
+    while (running)
+    {
+        // Build Packet ICMP
+        construct_icmp_echo_request(&icmp_hdr, 1);
 
-    // Send ICMP Packet
-    send_icmp_echo_request(sockfd, &dest_addr, &icmp_hdr);
+        // share time to RTT
+        gettimeofday(&start_time, NULL);
+
+        // Send ICMP Packet
+        send_icmp_echo_request(sockfd, &dest_addr, &icmp_hdr);
+        printf("ICMP Packet Send.\n");
+        stats.packets_sent++;
+
+        printf("Waiting of receive ICMP Packet...\n");
+        if (receive_icmp_echo_reply(sockfd, &recv_icmp_hdr, &src_addr, &ttl) > 0)
+        {
+            printf("ICMP Packet receive.\n");
+            gettimeofday(&end_time, NULL);
+            calculate_and_display_rtt_statistics(&start_time, &end_time, &stats);
+            double rtt = calculate_and_display_rtt(&start_time, &end_time);
+            printf("64 bytes form %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
+        }
+        else
+            printf("Nothing packet ICMP receive.\n");
+
+        sequence++;
+        sleep(1);
+    }
 
     close(sockfd);
     return 0;
