@@ -86,8 +86,6 @@ void parse_command_line(int ac, char **av, char **destination, int *verbose) {
         print_help();
     }
 
-    printf("Destination: %s\n", *destination);
-
     // Validate the destination
 
     if (is_valid_ipv4(*destination) == 1) {} 

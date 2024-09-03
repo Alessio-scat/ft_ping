@@ -16,11 +16,11 @@ int create_raw_socket()
     }
 
     /*
-        Set a timeout for recvfrom (2 seconds)
+        Set a timeout for recvfrom (1 seconds)
         define a time before timeout 
     */
     struct timeval timeout;
-    timeout.tv_sec = 1;
+    timeout.tv_sec = 2;
     timeout.tv_usec = 0;
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         fprintf(stderr, ERR_SET_SOCKET_TIMEOUT, strerror(errno));
@@ -108,19 +108,6 @@ int main(int ac, char **av) {
         // Send ICMP Packet
         send_icmp_echo_request(sockfd, &dest_addr, &icmp_hdr);
         stats.packets_sent++;
-
-        // if (receive_icmp_echo_reply(sockfd, &recv_icmp_hdr, &src_addr, &ttl) > 0)
-        // {
-        //     gettimeofday(&end_time, NULL);
-        //     calculate_and_display_rtt_statistics(&start_time, &end_time, &stats);
-        //     double rtt = calculate_and_display_rtt(&start_time, &end_time);
-        //     printf("64 bytes form %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
-
-        //     if (verbose)
-        //         printf("Verbose activate !\n");
-        // }
-        // else
-        //     fprintf(stderr, ERR_REQUEST_TIMEOUT, sequence);
 
         int result = receive_icmp_echo_reply(sockfd, &recv_icmp_hdr, &src_addr, &ttl);
         if (result > 0)
