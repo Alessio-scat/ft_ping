@@ -15,9 +15,12 @@ int create_raw_socket()
         exit(EXIT_FAILURE);
     }
 
-    // Set a timeout for recvfrom (2 seconds)
+    /*
+        Set a timeout for recvfrom (2 seconds)
+        define a time before timeout 
+    */
     struct timeval timeout;
-    timeout.tv_sec = 2;
+    timeout.tv_sec = 1;
     timeout.tv_usec = 0;
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         fprintf(stderr, ERR_SET_SOCKET_TIMEOUT, strerror(errno));
@@ -77,6 +80,7 @@ int main(int ac, char **av) {
     stats.rtt_total = 0;
     stats.rtt_sum_of_squares = 0;
     u_int8_t ttl;
+    int recv_any_reply = 0;
 
     check_root_privileges();
     sockfd = create_raw_socket();
@@ -124,18 +128,26 @@ int main(int ac, char **av) {
             gettimeofday(&end_time, NULL);
             calculate_and_display_rtt_statistics(&start_time, &end_time, &stats);
             double rtt = calculate_and_display_rtt(&start_time, &end_time);
+            recv_any_reply = 1;
             if (verbose)
                 printf("Verbose activate !\n");
             printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
         } 
-        else if (result == 0)
+        else if (result == 0){
+            recv_any_reply = 2;
             printf("Request timeout for icmp_seq %d\n", sequence);
+        }
         else
             fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
 
         sequence++;
         sleep(1);
     }
+
+    if (recv_any_reply == 1)
+        calculate_and_display_statistics(&stats, 0);
+    else if (recv_any_reply == 2)
+        calculate_and_display_statistics(&stats, 1);
 
     close(sockfd);
     return 0;

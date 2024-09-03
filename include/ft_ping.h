@@ -71,7 +71,7 @@ extern ping_stats_t stats;
 */
 void handle_interrupt(int sig);
 void calculate_and_display_rtt_statistics(struct timeval *start, struct timeval *end, ping_stats_t *stats);
-void calculate_and_display_statistics(ping_stats_t *stats);
+void calculate_and_display_statistics(ping_stats_t *stats, int tv);
 
 /*
     icmp.c

@@ -10,7 +10,7 @@ ping_stats_t stats;
 void handle_interrupt(int sig) {
     (void)sig;
     running = 0;
-    calculate_and_display_statistics(&stats);
+    // calculate_and_display_statistics(&stats);
 }
 
 void calculate_and_display_rtt_statistics(struct timeval *start, struct timeval *end, ping_stats_t *stats) {
@@ -27,10 +27,9 @@ void calculate_and_display_rtt_statistics(struct timeval *start, struct timeval 
     stats->rtt_sum_of_squares += rtt * rtt;
 
     stats->packets_received++;
-    // printf("RTT: %.3f ms\n", rtt);
 }
 
-void calculate_and_display_statistics(ping_stats_t *stats) {
+void calculate_and_display_statistics(ping_stats_t *stats, int tv) {
     double rtt_avg = stats->rtt_total / stats->packets_received;
     double rtt_stddev = sqrt((stats->rtt_sum_of_squares / stats->packets_received) - (rtt_avg * rtt_avg));
 
@@ -38,8 +37,8 @@ void calculate_and_display_statistics(ping_stats_t *stats) {
     printf("%d packets transmitted, %d packets received, %.1f%% packet loss\n",
            stats->packets_sent, stats->packets_received,
            ((stats->packets_sent - stats->packets_received) / (double)stats->packets_sent) * 100);
-    printf("round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n",
-           stats->rtt_min, rtt_avg, stats->rtt_max, rtt_stddev);
+    if (tv == 0)
+        printf("round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n", stats->rtt_min, rtt_avg, stats->rtt_max, rtt_stddev);
 }
 
 /*
