@@ -15,7 +15,7 @@ void construct_icmp_echo_request(struct icmphdr *icmp_hdr, int sequence) {
 */
 void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, struct icmphdr *icmp_hdr) {
     if (sendto(sockfd, icmp_hdr, sizeof(struct icmphdr), 0, (struct sockaddr *)dest_addr, sizeof(*dest_addr)) <= 0) {
-        perror("Error sending ICMP packet");
+        fprintf(stderr, ERR_SENDTO_NETWORK_UNREACHABLE);
         exit(EXIT_FAILURE);
     }
 }
@@ -33,7 +33,7 @@ int receive_icmp_echo_reply(int sockfd, struct icmphdr *recv_icmp_hdr, struct so
 
     int bytes_received = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)src_addr, &addr_len);
     if (bytes_received < 0) {
-        perror("Error receiving ICMP packet");
+        fprintf(stderr, ERR_REQUEST_TIMEOUT);
         return -1;
     }
 
@@ -42,9 +42,16 @@ int receive_icmp_echo_reply(int sockfd, struct icmphdr *recv_icmp_hdr, struct so
     memcpy(recv_icmp_hdr, buffer + ip_hdr_len, sizeof(struct icmphdr));
 
     *ttl = ip_hdr->ttl;
-    // printf("TTL: %d\n", *ttl);
 
-    // memcpy(recv_icmp_hdr, buffer, sizeof(struct icmphdr));
+    unsigned short received_checksum = recv_icmp_hdr->checksum;
+    recv_icmp_hdr->checksum = 0;
+    unsigned short calculated_checksum = checksum(recv_icmp_hdr, sizeof(struct icmphdr));
+    
+
+    if (received_checksum != calculated_checksum) {
+        fprintf(stderr, ERR_BAD_CHECKSUM);
+        return -1;
+    }
 
     return (recv_icmp_hdr->type == ICMP_ECHOREPLY) && (recv_icmp_hdr->un.echo.id == getpid());
 }

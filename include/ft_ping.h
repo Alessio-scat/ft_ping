@@ -7,11 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include <netinet/ip_icmp.h>  // to ICMP headers
 #include <netinet/ip.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <arpa/inet.h> // to inet_pton
+#include <regex.h>
+#include <netdb.h>
+#include "ft_ping_error.h"
 
 // Define struct icmphdr to macOS
 struct icmphdr {

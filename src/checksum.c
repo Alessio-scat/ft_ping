@@ -1,6 +1,13 @@
 #include "../include/ft_ping.h"
 
-// To calculate checksum
+
+/*
+    Verify integrity data message ICMP.
+    if the checksum not equals start and end => error
+
+    @calcul: Adding all world 16 bytes packet ICMP 
+*/
+
 unsigned short checksum(void *b, int len) {
     unsigned short *buf = b;
     unsigned int sum = 0;

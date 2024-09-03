@@ -2,7 +2,7 @@
 
 void check_root_privileges() {
     if (getuid() != 0) {
-        fprintf(stderr, "Error: this program must be run as root.\n");
+        fprintf(stderr, ERR_SOCKET_NOT_PERMITTED);
         exit(EXIT_FAILURE);
     }
 }
@@ -11,7 +11,7 @@ int create_raw_socket()
 {
     int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (sockfd < 0) {
-        perror("Error creating raw socket");
+        fprintf(stderr, ERR_CANNOT_CREATE_SOCKET, "unknown error");
         exit(EXIT_FAILURE);
     }
     return sockfd;
@@ -26,6 +26,28 @@ double calculate_and_display_rtt(struct timeval *start, struct timeval *end) {
     return mtime;
 }
 
+/*
+    getaddrinfo : resolve domain in IP adress
+*/
+void config_destination(char *hostname, struct sockaddr_in *dest_addr)
+{
+    struct addrinfo hints, *res;
+    int errcode;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET; // IPv4 only
+    hints.ai_socktype = SOCK_RAW; // Raw socket
+
+    errcode = getaddrinfo(hostname, NULL, &hints, &res);
+    if (errcode != 0) {
+        fprintf(stderr, ERR_CANNOT_RESOLVE_HOSTNAME, hostname);
+        exit(EXIT_FAILURE);
+    }
+
+    // Copy the resolved address to dest_addr
+    memcpy(dest_addr, res->ai_addr, res->ai_addrlen);
+    freeaddrinfo(res); // Free the linked list
+}
 
 int main(int ac, char **av) {
 
@@ -33,7 +55,6 @@ int main(int ac, char **av) {
     parse_command_line(ac, av, &destination);
 
     int sockfd;//, verbose;
-    // char *destination = "8.8.8.8"; // test Google
     struct sockaddr_in dest_addr, src_addr; // IP Adress dest and src
     struct icmphdr icmp_hdr, recv_icmp_hdr; // Build and Analyse packets ICMP
     struct timeval start_time, end_time; // time
@@ -50,15 +71,16 @@ int main(int ac, char **av) {
     sockfd = create_raw_socket();
 
     // Config destination addr
-    memset(&dest_addr, 0, sizeof(dest_addr));
-    dest_addr.sin_family = AF_INET;
-    if (inet_pton(AF_INET, destination, &dest_addr.sin_addr) <= 0) {
-        perror("IP address conversion error");
-        exit(EXIT_FAILURE);
-    }
+    // memset(&dest_addr, 0, sizeof(dest_addr));
+    // dest_addr.sin_family = AF_INET;
+    // if (inet_pton(AF_INET, destination, &dest_addr.sin_addr) <= 0) {
+    //     perror("IP address conversion error");
+    //     exit(EXIT_FAILURE);
+    // }
+    config_destination(destination, &dest_addr);
 
     printf("PING %s (%s): 56 data bytes\n", destination, destination);
-    signal(SIGINT, handle_interrupt);
+    signal(SIGINT, handle_interrupt); 
 
     while (running)
     {
@@ -80,8 +102,7 @@ int main(int ac, char **av) {
             printf("64 bytes form %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
         }
         else
-            printf("Nothing packet ICMP receive.\n");
-
+            fprintf(stderr, ERR_REQUEST_TIMEOUT, sequence);
         sequence++;
         sleep(1);
     }
@@ -111,6 +132,7 @@ int main(int ac, char **av) {
     Step4 : Receive Response ICMP ECHO Reply
 
         - Implement reception packets ICMP ECHO Reply
+        - Verify if the checksum is ok
         - Verify if the responde correspond the request send used fields Identifier and Sequence Number
         - if the message Echo Reply is not receive, manage this 
 
