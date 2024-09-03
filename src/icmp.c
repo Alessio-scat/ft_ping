@@ -33,8 +33,13 @@ int receive_icmp_echo_reply(int sockfd, struct icmphdr *recv_icmp_hdr, struct so
 
     int bytes_received = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)src_addr, &addr_len);
     if (bytes_received < 0) {
-        fprintf(stderr, ERR_REQUEST_TIMEOUT);
-        return -1;
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // Timeout occurred
+            return 0;
+        } else {
+            fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
+            return -1;
+        }
     }
 
     struct iphdr *ip_hdr = (struct iphdr *)buffer;

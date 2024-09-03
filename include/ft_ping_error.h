@@ -5,10 +5,14 @@
 #define ERR_UNKNOWN_HOST "ping: unknown host %s\n"
 #define ERR_TEMPORARY_NAME_RESOLUTION "ping: %s: Temporary failure in name resolution\n"
 
+#define ERR_RECEIVING_ICMP_PACKET "Error: Receiving ICMP packet failed: %s\n"
+
 #define ERR_NO_ROUTE_TO_HOST "ping: %s: No route to host\n"
 
 #define ERR_SOCKET_NOT_PERMITTED "ping: socket: Operation not permitted\n"
 #define ERR_PERMISSION_DENIED "ping: %s: Permission denied (are you root?)\n"
+#define ERR_CANNOT_CREATE_SOCKET "Error: Cannot create raw socket: %s\n"
+#define ERR_SET_SOCKET_TIMEOUT "Error: Cannot set socket timeout: %s\n"
 
 #define ERR_INVALID_IP_ADDRESS "ping: %s: Name or service not known\n"
 
@@ -21,7 +25,6 @@
 #define ERR_CANNOT_BIND_SOURCE_ADDRESS "ping: cannot bind to %s: Cannot assign requested address\n"
 
 #define ERR_INVALID_OPTION "ping: invalid option -- '%c'\nUsage: ping [-aAbBdDfhLnOqrRUvV64] [-c count] [-i interval] [-I interface]\n               [-m mark] [-M pmtudisc_option] [-l preload] [-p pattern] [-Q tos]\n               [-s packetsize] [-S sndbuf] [-t ttl] [-T timestamp_option]\n               [-w deadline] [-W timeout] [hop1 ...] destination\n"
-#define ERR_INVALID_TOS "ping: invalid TOS: `%s`\n"
 
 #define ERR_PACKET_SIZE_TOO_LARGE "ping: packet size too large: %d > maximum allowed size: %d\n"
 
@@ -32,8 +35,6 @@
 
 #define ERR_TTL_OUT_OF_RANGE "ping: ttl %d out of range\n"
 #define ERR_TTL_EXCEEDED "ping: time to live exceeded\n"
-
-#define ERR_CANNOT_CREATE_SOCKET "ping: cannot create socket: %s\n"
 
 #define ERR_BAD_CHECKSUM "Error: Invalid ICMP packet received (bad checksum).\n"
 

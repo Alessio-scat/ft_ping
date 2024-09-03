@@ -52,7 +52,7 @@ int is_valid_hostname(const char *hostname) {
 
 }
 
-void parse_command_line(int ac, char **av, char **destination) {
+void parse_command_line(int ac, char **av, char **destination, int *verbose) {
     int opt;
     int destination_set = 0;
 
@@ -61,7 +61,7 @@ void parse_command_line(int ac, char **av, char **destination) {
             opt = av[i][1];
             switch (opt) {
                 case 'v':
-                    printf("Mode verbose activate.\n");
+                    *verbose = 1;
                     break;
 
                 case 'h':

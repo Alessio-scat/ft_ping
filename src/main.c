@@ -11,9 +11,19 @@ int create_raw_socket()
 {
     int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (sockfd < 0) {
-        fprintf(stderr, ERR_CANNOT_CREATE_SOCKET, "unknown error");
+        fprintf(stderr, ERR_CANNOT_CREATE_SOCKET, strerror(errno));
         exit(EXIT_FAILURE);
     }
+
+    // Set a timeout for recvfrom (2 seconds)
+    struct timeval timeout;
+    timeout.tv_sec = 2;
+    timeout.tv_usec = 0;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+        fprintf(stderr, ERR_SET_SOCKET_TIMEOUT, strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
     return sockfd;
 }
 
@@ -52,7 +62,8 @@ void config_destination(char *hostname, struct sockaddr_in *dest_addr)
 int main(int ac, char **av) {
 
     char *destination = NULL;
-    parse_command_line(ac, av, &destination);
+    int verbose = 0;
+    parse_command_line(ac, av, &destination, &verbose);
 
     int sockfd;//, verbose;
     struct sockaddr_in dest_addr, src_addr; // IP Adress dest and src
@@ -94,15 +105,34 @@ int main(int ac, char **av) {
         send_icmp_echo_request(sockfd, &dest_addr, &icmp_hdr);
         stats.packets_sent++;
 
-        if (receive_icmp_echo_reply(sockfd, &recv_icmp_hdr, &src_addr, &ttl) > 0)
+        // if (receive_icmp_echo_reply(sockfd, &recv_icmp_hdr, &src_addr, &ttl) > 0)
+        // {
+        //     gettimeofday(&end_time, NULL);
+        //     calculate_and_display_rtt_statistics(&start_time, &end_time, &stats);
+        //     double rtt = calculate_and_display_rtt(&start_time, &end_time);
+        //     printf("64 bytes form %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
+
+        //     if (verbose)
+        //         printf("Verbose activate !\n");
+        // }
+        // else
+        //     fprintf(stderr, ERR_REQUEST_TIMEOUT, sequence);
+
+        int result = receive_icmp_echo_reply(sockfd, &recv_icmp_hdr, &src_addr, &ttl);
+        if (result > 0)
         {
             gettimeofday(&end_time, NULL);
             calculate_and_display_rtt_statistics(&start_time, &end_time, &stats);
             double rtt = calculate_and_display_rtt(&start_time, &end_time);
-            printf("64 bytes form %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
-        }
+            if (verbose)
+                printf("Verbose activate !\n");
+            printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
+        } 
+        else if (result == 0)
+            printf("Request timeout for icmp_seq %d\n", sequence);
         else
-            fprintf(stderr, ERR_REQUEST_TIMEOUT, sequence);
+            fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
+
         sequence++;
         sleep(1);
     }

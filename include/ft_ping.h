@@ -15,6 +15,8 @@
 #include <regex.h>
 #include <netdb.h>
 #include "ft_ping_error.h"
+#include <errno.h>
+
 
 // Define struct icmphdr to macOS
 struct icmphdr {
@@ -86,6 +88,6 @@ unsigned short checksum(void *b, int len);
 /*
     parsing.c
 */
-void parse_command_line(int ac, char **av, char **destination);
+void parse_command_line(int ac, char **av, char **destination, int *verbose);
 
 #endif
