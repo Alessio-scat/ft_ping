@@ -99,9 +99,3 @@ Example: sudo ./ft_ping 999.999.999.999.
 Example: sudo ./ft_ping 127.0.0.1.
 ```
 
-
-Todo list :
-
-    - mode verbose -v ...
-    - status error manage
-

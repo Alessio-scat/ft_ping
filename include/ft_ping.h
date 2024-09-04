@@ -95,4 +95,16 @@ void parse_command_line(int ac, char **av, char **destination, int *verbose);
 */
 void handle_icmp_error_verbose(struct icmphdr *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v);
 
+
+/*
+    checl_root.c
+*/
+void check_root_privileges();
+
+/*
+    rtt.c
+*/
+
+double calculate_and_display_rtt(struct timeval *start, struct timeval *end);
+
 #endif

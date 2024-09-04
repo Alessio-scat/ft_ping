@@ -2,13 +2,6 @@
 
 int g_status = 0;
 
-void check_root_privileges() {
-    if (getuid() != 0) {
-        fprintf(stderr, ERR_SOCKET_NOT_PERMITTED);
-        exit(EXIT_FAILURE);
-    }
-}
-
 int create_raw_socket()
 {
     int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
@@ -30,15 +23,6 @@ int create_raw_socket()
     }
 
     return sockfd;
-}
-
-double calculate_and_display_rtt(struct timeval *start, struct timeval *end) {
-    long seconds = end->tv_sec - start->tv_sec;
-    long useconds = end->tv_usec - start->tv_usec;
-
-    double mtime = ((seconds) * 1000 + useconds / 1000.0);
-
-    return mtime;
 }
 
 /*

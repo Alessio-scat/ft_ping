@@ -1,26 +1,63 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -Werror
-SRC_DIR = src
-SRC = $(wildcard $(SRC_DIR)/*.c)
-OBJ_DIR = obj
-OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-TARGET = ft_ping
+.PHONY:     			all $(NAME) clear mkbuild clean fclean re
 
-all: $(TARGET)
+NAME					= ft_ping
 
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ)
+BUILD_DIR				= build/
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+HEADER_DIR				= include/
+HEADER_FILE				= ft_ping.h
+HEADER_FILE_ERROR		= ft_ping_error.h
 
-clean:
-	rm -rf $(OBJ_DIR)
+DIR						= src/
+SRC			 			= main.c \
+							checksum.c \
+							displayStats.c \
+							icmp.c \
+							parsing.c \
+							verbose.c \
 
-fclean: clean
-	rm -f $(TARGET)
+OBJECTS			    	= $(SRC:%.c=$(BUILD_DIR)%.o)
+	
+GCC						= gcc
+CFLAGS					= -Wall -Wextra -Werror
+SANITIZE				= $(CFLAGS) -g3 -fsanitize=address
 
-re: fclean all
+RM 						= rm -rf
+CLEAR					= clear
 
-s.PHONY: all clean fclean re
+
+$(BUILD_DIR)%.o: 		$(DIR)%.c $(HEADER_DIR)/$(HEADER_FILE) $(HEADER_DIR)/$(HEADER_FILE_ERROR)
+						@mkdir -p $(BUILD_DIR)
+						$(GCC) $(CFLAGS) -I$(HEADER_DIR) -o $@ -c $<
+
+
+all: 					clear mkbuild $(HEADER_DIR) $(NAME)
+
+						 
+mkbuild:
+						@mkdir -p build
+
+
+clear:
+						$(CLEAR)
+						
+$(NAME): 				$(OBJECTS)
+						@$(GCC) $(OBJECTS) -o $(NAME)
+						@echo "$(GREEN)[✓] $(NAME) created !$(DEFAULT)"
+						
+clean:					
+						@${RM} $(OBJECTS)
+						@${RM} $(BUILD_DIR)
+						@echo "$(YELLOW)[-] object files deleted !$(DEFAULT)"
+
+fclean:					clean
+						@${RM} ${NAME}
+						@echo "$(RED)[x] all deleted !$(DEFAULT)"
+
+re:						fclean all
+						$(MAKE) all
+
+RED = \033[1;31m
+GREEN = \033[1;32m
+YELLOW = \033[1;33m
+DEFAULT = \033[0m
