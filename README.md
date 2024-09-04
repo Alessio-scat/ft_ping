@@ -74,22 +74,30 @@ Several tests can be performed to ensure the functionality of ft_ping:
 **1. Basic Connectivity:**
 
 - Test with a reachable IP address, such as 8.8.8.8.
-    Example: sudo ./ft_ping 8.8.8.8.
+```
+Example: sudo ./ft_ping 8.8.8.8.
+```
 
 **2.Unreachable Address:**
 
 - Test with an IP address that does not respond to pings, such as 10.255.255.1.
-    Example: sudo ./ft_ping 10.255.255.1.
+```
+Example: sudo ./ft_ping 10.255.255.1.
+```
 
 **3. Invalid Address:**
 
 - Test with an invalid IP address format, such as 999.999.999.999.
-    Example: sudo ./ft_ping 999.999.999.999.
+```
+Example: sudo ./ft_ping 999.999.999.999.
+```
 
 **4. Localhost:**
 
 - Test with the loopback address 127.0.0.1.
-    Example: sudo ./ft_ping 127.0.0.1.
+```
+Example: sudo ./ft_ping 127.0.0.1.
+```
 
 
 Todo list :
@@ -97,6 +105,3 @@ Todo list :
     - mode verbose -v ...
     - status error manage
 
-```
-
-```

@@ -1,5 +1,7 @@
 #include "../include/ft_ping.h"
 
+int g_status = 0;
+
 void check_root_privileges() {
     if (getuid() != 0) {
         fprintf(stderr, ERR_SOCKET_NOT_PERMITTED);
@@ -81,20 +83,14 @@ int main(int ac, char **av) {
     stats.rtt_sum_of_squares = 0;
     u_int8_t ttl;
     int recv_any_reply = 0;
+    int v = 0;
 
     check_root_privileges();
     sockfd = create_raw_socket();
 
-    // Config destination addr
-    // memset(&dest_addr, 0, sizeof(dest_addr));
-    // dest_addr.sin_family = AF_INET;
-    // if (inet_pton(AF_INET, destination, &dest_addr.sin_addr) <= 0) {
-    //     perror("IP address conversion error");
-    //     exit(EXIT_FAILURE);
-    // }
     config_destination(destination, &dest_addr);
 
-    printf("PING %s (%s): 56 data bytes\n", destination, destination);
+    printf("PING %s (%s): 56 data bytes\n", destination, inet_ntoa(dest_addr.sin_addr));
     signal(SIGINT, handle_interrupt); 
 
     while (running)
@@ -117,8 +113,9 @@ int main(int ac, char **av) {
             double rtt = calculate_and_display_rtt(&start_time, &end_time);
             recv_any_reply = 1;
             if (verbose)
-                printf("Verbose activate !\n");
-            printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
+                handle_icmp_error_verbose(&recv_icmp_hdr, &src_addr, sequence, &v);
+            if (v == 0)
+                printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
         } 
         else if (result == 0){
             recv_any_reply = 2;
@@ -133,11 +130,15 @@ int main(int ac, char **av) {
 
     if (recv_any_reply == 1)
         calculate_and_display_statistics(&stats, 0);
-    else if (recv_any_reply == 2)
+    else if (recv_any_reply == 2){
+        g_status = 2;
         calculate_and_display_statistics(&stats, 1);
+    }
+    else
+        g_status = 1;
 
     close(sockfd);
-    return 0;
+    return g_status;
 }
 
 

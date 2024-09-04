@@ -17,7 +17,6 @@
 #include "ft_ping_error.h"
 #include <errno.h>
 
-
 // Define struct icmphdr to macOS
 struct icmphdr {
     u_int8_t type;
@@ -65,6 +64,7 @@ typedef struct {
 */
 extern volatile int running;
 extern ping_stats_t stats;
+extern int g_status;
 
 /*
     displayStats.c
@@ -89,5 +89,10 @@ unsigned short checksum(void *b, int len);
     parsing.c
 */
 void parse_command_line(int ac, char **av, char **destination, int *verbose);
+
+/*
+    verbose.c
+*/
+void handle_icmp_error_verbose(struct icmphdr *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v);
 
 #endif
