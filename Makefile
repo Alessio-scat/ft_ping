@@ -15,6 +15,8 @@ SRC			 			= main.c \
 							icmp.c \
 							parsing.c \
 							verbose.c \
+							check_root.c \
+							rtt.c \
 
 OBJECTS			    	= $(SRC:%.c=$(BUILD_DIR)%.o)
 	
