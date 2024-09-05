@@ -10,7 +10,6 @@ ping_stats_t stats;
 void handle_interrupt(int sig) {
     (void)sig;
     running = 0;
-    // calculate_and_display_statistics(&stats);
 }
 
 void calculate_and_display_rtt_statistics(struct timeval *start, struct timeval *end, ping_stats_t *stats) {

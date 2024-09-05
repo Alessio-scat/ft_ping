@@ -22,6 +22,15 @@ int create_raw_socket()
         exit(EXIT_FAILURE);
     }
 
+    /*
+        Set the TTL value
+    */
+    // int ttl_value = 1;
+    // if (setsockopt(sockfd, IPPROTO_IP, IP_TTL, &ttl_value, sizeof(ttl_value)) < 0) {
+    //     fprintf(stderr, "Error setting TTL value: %s\n", strerror(errno));
+    //     exit(EXIT_FAILURE);
+    // }
+
     return sockfd;
 }
 
@@ -54,7 +63,7 @@ int main(int ac, char **av) {
     int verbose = 0;
     parse_command_line(ac, av, &destination, &verbose);
 
-    int sockfd;//, verbose;
+    int sockfd;
     struct sockaddr_in dest_addr, src_addr;
     #ifdef __APPLE__
         struct icmp icmp_hdr, recv_icmp_hdr;
@@ -62,9 +71,6 @@ int main(int ac, char **av) {
         struct icmphdr icmp_hdr, recv_icmp_hdr;
     #endif
     struct timeval start_time, end_time;
-    // struct sockaddr_in dest_addr, src_addr; // IP Adress dest and src
-    // struct icmphdr icmp_hdr, recv_icmp_hdr; // Build and Analyse packets ICMP
-    // struct timeval start_time, end_time; // time
     int sequence = 0;
     stats.packets_sent = 0;
     stats.packets_received = 0;
@@ -75,9 +81,11 @@ int main(int ac, char **av) {
     u_int8_t ttl;
     int recv_any_reply = 0;
     int v = 0;
-    // pid_t pid = getpid();
-    // pid = getpid();
-    // printf("GETPID() Main: %d\n", pid);
+    #ifdef __APPLE__
+        struct ip ip_hdr_copy;
+    #else
+        struct iphdr ip_hdr_copy;
+    #endif
 
     check_root_privileges();
     sockfd = create_raw_socket();
@@ -99,15 +107,16 @@ int main(int ac, char **av) {
         send_icmp_echo_request(sockfd, &dest_addr, &icmp_hdr);
         stats.packets_sent++;
 
-        int result = receive_icmp_echo_reply(sockfd, &recv_icmp_hdr, &src_addr, &ttl);
+
+        int result = receive_icmp_echo_reply(sockfd, &recv_icmp_hdr, &src_addr, &ttl, &ip_hdr_copy);
         if (result > 0)
         {
             gettimeofday(&end_time, NULL);
             calculate_and_display_rtt_statistics(&start_time, &end_time, &stats);
             double rtt = calculate_and_display_rtt(&start_time, &end_time);
             recv_any_reply = 1;
-            if (verbose)
-                handle_icmp_error_verbose(&recv_icmp_hdr, &src_addr, sequence, &v);
+            // if (verbose)
+            //     handle_icmp_error_verbose(&recv_icmp_hdr, &src_addr, sequence, &v, ip_hdr_copy);
             if (v == 0)
                 printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
         } 
@@ -116,7 +125,10 @@ int main(int ac, char **av) {
             printf("Request timeout for icmp_seq %d\n", sequence);
         }
         else
-            fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
+            if (verbose)
+                handle_icmp_error_verbose(&recv_icmp_hdr, &src_addr, sequence, &v, &ip_hdr_copy);
+            else
+                fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
 
         sequence++;
         sleep(1);

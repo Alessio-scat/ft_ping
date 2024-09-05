@@ -21,28 +21,10 @@ void construct_icmp_echo_request(void *icmp_hdr, int sequence)
 #endif
 }
 
-// void construct_icmp_echo_request(struct icmphdr *icmp_hdr, int sequence) {
-//     memset(icmp_hdr, 0, sizeof(struct icmphdr));
-//     icmp_hdr->type = ICMP_ECHO; // It's 8 to ECHO_REQUEST 
-//     icmp_hdr->code = 0; // Always to ECHO_REQUEST 
-//     printf("1)ft_construct_icmp_echo_request() --> %d\n", icmp_hdr->un.echo.id);
-//     icmp_hdr->un.echo.id = getpid();//pid;
-//     printf("2)ft_construct_icmp_echo_request() --> %d\n", icmp_hdr->un.echo.id);
-//     icmp_hdr->un.echo.sequence = sequence;
-//     icmp_hdr->checksum = checksum(icmp_hdr, sizeof(struct icmphdr));
-//     printf("Packet sent: ID = %d, Seq = %d, Checksum = %d\n", icmp_hdr->un.echo.id, icmp_hdr->un.echo.sequence, icmp_hdr->checksum);
-// }
-
 /*
     sendto : send data throught socket 
         - 0 : No flag
 */
-// void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, struct icmphdr *icmp_hdr) {
-//     if (sendto(sockfd, icmp_hdr, sizeof(struct icmphdr), 0, (struct sockaddr *)dest_addr, sizeof(*dest_addr)) <= 0) {
-//         fprintf(stderr, ERR_SENDTO_NETWORK_UNREACHABLE);
-//         exit(EXIT_FAILURE);
-//     }
-// }
 
 void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, void *icmp_hdr)
 {
@@ -64,51 +46,13 @@ void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, void *icm
     ignore the IP header (which is always present in a network packet) and concentrate solely on the ICMP header
 */
 
-// int receive_icmp_echo_reply(int sockfd, struct icmphdr *recv_icmp_hdr, struct sockaddr_in *src_addr, uint8_t *ttl) {
-//     char buffer[1024];
-//     socklen_t addr_len = sizeof(*src_addr);
-
-//     printf("1)ft_receive_icmp_echo_reply() --> %d\n", recv_icmp_hdr->un.echo.id);
-//     int bytes_received = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)src_addr, &addr_len);
-//     if (bytes_received < 0) {
-//         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-//             // Timeout occurred
-//             return 0;
-//         } else {
-//             fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
-//             return -1;
-//         }
-//     }
-
-//     struct iphdr *ip_hdr = (struct iphdr *)buffer;
-//     int ip_hdr_len = ip_hdr->ihl * 4; // ihl (Internet Header Length)
-//     memcpy(recv_icmp_hdr, buffer + ip_hdr_len, sizeof(struct icmphdr));
-
-//     *ttl = ip_hdr->ttl;
-
-//     unsigned short received_checksum = recv_icmp_hdr->checksum;
-//     recv_icmp_hdr->checksum = 0;
-//     unsigned short calculated_checksum = checksum(recv_icmp_hdr, sizeof(struct icmphdr));
-//     printf("2)ft_receive_icmp_echo_reply() --> %d\n", recv_icmp_hdr->un.echo.id);
-    
-
-//     if (received_checksum != calculated_checksum) {
-//         fprintf(stderr, ERR_BAD_CHECKSUM);
-//         return -1;
-//     }
-
-//     printf("Packet received: ID = %d, Seq = %d, Checksum = %d\n", recv_icmp_hdr->un.echo.id, recv_icmp_hdr->un.echo.sequence, received_checksum);
-
-
-//     // printf("PID DU MAIN : %d\n", pid);
-//     // int i = getpid();
-//     // printf("GETPID() : %d\n", getpid());
-//     // printf("GETPID() I : %d\n", i);
-
-//     return (recv_icmp_hdr->type == ICMP_ECHOREPLY) && (recv_icmp_hdr->un.echo.id == getpid());
-// }
-
-int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in *src_addr, uint8_t *ttl)
+int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in *src_addr, uint8_t *ttl, 
+                             #ifdef __APPLE__
+                               struct ip *ip_hdr_copy
+                               #else
+                               struct iphdr *ip_hdr_copy
+                               #endif
+                               )
 {
     char buffer[1024];
     socklen_t addr_len = sizeof(*src_addr);
@@ -124,11 +68,13 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
 
     #ifdef __APPLE__
         struct ip *ip_hdr = (struct ip *)buffer;
+        memcpy(ip_hdr_copy, ip_hdr, sizeof(struct ip));
     #else
         struct iphdr *ip_hdr = (struct iphdr *)buffer;
+        memcpy(ip_hdr_copy, ip_hdr, sizeof(struct iphdr));
     #endif
 
-        int ip_hdr_len = ip_hdr->ip_hl * 4;  // Utilisez ip_hl sur macOS et ihl sur Linux
+        int ip_hdr_len = ip_hdr->ip_hl * 4;
 
     #ifdef __APPLE__
         struct icmp *hdr = (struct icmp *)(buffer + ip_hdr_len);
@@ -139,9 +85,9 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
         memcpy(recv_icmp_hdr, hdr, sizeof(*hdr));
 
     #ifdef __APPLE__
-        *ttl = ip_hdr->ip_ttl;  // Utilisez ip_ttl sur macOS
+        *ttl = ip_hdr->ip_ttl;
     #else
-        *ttl = ip_hdr->ttl;  // Utilisez ttl sur Linux
+        *ttl = ip_hdr->ttl;
     #endif
 
     #ifdef __APPLE__

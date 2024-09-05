@@ -5,188 +5,27 @@
     https://datatracker.ietf.org/doc/html/rfc792
 */
 
-// void handle_icmp_error_verbose(void *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v)
-// {
-//     #ifdef __APPLE__
-//         struct icmp *hdr = (struct icmp *)recv_icmp_hdr;  // Cast vers struct icmp pour macOS
-//     #else
-//         struct icmphdr *hdr = (struct icmphdr *)recv_icmp_hdr;  // Cast vers struct icmphdr pour Linux
-//     #endif
-
-//     // Vérification du type d'ICMP pour ne pas traiter les ECHO_REPLY
-//     #ifdef __APPLE__
-//         if (hdr->icmp_type != ICMP_ECHOREPLY) {
-//     #else
-//         if (hdr->type != ICMP_ECHOREPLY) {
-//     #endif
-//             *v = 1;
-
-//             // Gestion des différents types d'erreurs ICMP
-//     #ifdef __APPLE__
-//             switch (hdr->icmp_type) {
-//                 case 3:  // Destination Unreachable
-//                     switch (hdr->icmp_code) {
-//     #else
-//             switch (hdr->type) {
-//                 case 3:  // Destination Unreachable
-//                     switch (hdr->code) {
-//     #endif
-//                         case 0:
-//                             printf("From %s: icmp_seq=%d Destination Network Unreachable\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         case 1:
-//                             printf("From %s: icmp_seq=%d Destination Host Unreachable\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         case 2:
-//                             printf("From %s: icmp_seq=%d Destination Protocol Unreachable\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         case 3:
-//                             printf("From %s: icmp_seq=%d Destination Port Unreachable\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         case 13:
-//                             printf("From %s: icmp_seq=%d Communication administratively prohibited\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         default:
-//     #ifdef __APPLE__
-//                             printf("From %s: icmp_seq=%d Destination Unreachable, Bad code: %d\n", inet_ntoa(src_addr->sin_addr), sequence, hdr->icmp_code);
-//     #else
-//                             printf("From %s: icmp_seq=%d Destination Unreachable, Bad code: %d\n", inet_ntoa(src_addr->sin_addr), sequence, hdr->code);
-//     #endif
-//                             break;
-//                     }
-//                     break;
-
-//                 case 11:  // Time Exceeded
-//     #ifdef __APPLE__
-//                     switch (hdr->icmp_code) {
-//     #else
-//                     switch (hdr->code) {
-//     #endif
-//                         case 0:
-//                             printf("From %s: icmp_seq=%d Time to live exceeded\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         case 1:
-//                             printf("From %s: icmp_seq=%d Fragment reassembly time exceeded\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         default:
-//     #ifdef __APPLE__
-//                             printf("From %s: icmp_seq=%d Time Exceeded, Bad code: %d\n", inet_ntoa(src_addr->sin_addr), sequence, hdr->icmp_code);
-//     #else
-//                             printf("From %s: icmp_seq=%d Time Exceeded, Bad code: %d\n", inet_ntoa(src_addr->sin_addr), sequence, hdr->code);
-//     #endif
-//                             break;
-//                     }
-//                     break;
-
-//                 case 12:
-//     #ifdef __APPLE__
-//                     switch (hdr->icmp_code) {
-//     #else
-//                     switch (hdr->code) {
-//     #endif
-//                         case 0:
-//                             printf("From %s: icmp_seq=%d Pointer indicates the error\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                     }
-//                     break;
-
-//                 case 4:
-//     #ifdef __APPLE__
-//                     switch (hdr->icmp_code) {
-//     #else
-//                     switch (hdr->code) {
-//     #endif
-//                         case 0:
-//                             printf("From %s: icmp_seq=%d Source Quench\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                     }
-//                     break;
-
-//                 case 5:  // Redirect
-//     #ifdef __APPLE__
-//                     switch (hdr->icmp_code) {
-//     #else
-//                     switch (hdr->code) {
-//     #endif
-//                         case 0:
-//                             printf("From %s: icmp_seq=%d Redirect Network\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         case 1:
-//                             printf("From %s: icmp_seq=%d Redirect Host\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         case 2:
-//                             printf("From %s: icmp_seq=%d Redirect Network for Type of Service\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         case 3:
-//                             printf("From %s: icmp_seq=%d Redirect Host for Type of Service\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                             break;
-//                         default:
-//     #ifdef __APPLE__
-//                             printf("From %s: icmp_seq=%d Redirect, Bad code: %d\n", inet_ntoa(src_addr->sin_addr), sequence, hdr->icmp_code);
-//     #else
-//                             printf("From %s: icmp_seq=%d Redirect, Bad code: %d\n", inet_ntoa(src_addr->sin_addr), sequence, hdr->code);
-//     #endif
-//                             break;
-//                     }
-//                     break;
-
-//                 case 13:  // Timestamp Request
-//                     printf("From %s: icmp_seq=%d Timestamp Request\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                     break;
-
-//                 case 14:  // Timestamp Reply
-//                     printf("From %s: icmp_seq=%d Timestamp Reply\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                     break;
-
-//                 case 15:  // Information Request
-//                     printf("From %s: icmp_seq=%d Information Request\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                     break;
-
-//                 case 16:  // Information Reply
-//                     printf("From %s: icmp_seq=%d Information Reply\n", inet_ntoa(src_addr->sin_addr), sequence);
-//                     break;
-
-//                 default:
-//     #ifdef __APPLE__
-//                     printf("From %s: icmp_seq=%d Unknown ICMP type: %d code: %d\n", inet_ntoa(src_addr->sin_addr), sequence, hdr->icmp_type, hdr->icmp_code);
-//     #else
-//                     printf("From %s: icmp_seq=%d Unknown ICMP type: %d code: %d\n", inet_ntoa(src_addr->sin_addr), sequence, hdr->type, hdr->code);
-//     #endif
-//                     break;
-//             }
-//         }
-// }
-
 
 #include <netinet/ip.h>
 #ifdef __APPLE__
-#include <netinet/ip_icmp.h>  // Pour macOS : struct icmp
-typedef struct icmp icmp_t;   // Alias pour macOS
+#include <netinet/ip_icmp.h> 
+typedef struct icmp icmp_t;
 #else
-#include <netinet/ip_icmp.h>  // Pour Linux : struct icmphdr
-typedef struct icmphdr icmp_t;  // Alias pour Linux
+#include <netinet/ip_icmp.h>
+typedef struct icmphdr icmp_t;
 #endif
 
-void handle_icmp_error_verbose(void *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v)
+void handle_icmp_error_verbose(void *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v,
+                                #ifdef __APPLE__
+                               struct ip *ip_hdr
+                               #else
+                               struct iphdr *ip_hdr
+                               #endif
+                               )
 {
-    // int is_macos;
-
-    // // Détection de l'OS
-    // #ifdef __APPLE__
-    //     is_macos = 1;
-    // #else
-    //     is_macos = 0;
-    // #endif
-
-    // icmp_t *hdr = (icmp_t *)recv_icmp_hdr;
-
-    // int icmp_type = is_macos ? hdr->icmp_type : hdr->type;
-    // int icmp_code = is_macos ? hdr->icmp_code : hdr->code;
-
     int icmp_type;
     int icmp_code;
 
-    // Cast du pointeur recv_icmp_hdr selon le système
     #ifdef __APPLE__
         struct icmp *hdr = (struct icmp *)recv_icmp_hdr;
         icmp_type = hdr->icmp_type;
@@ -200,28 +39,32 @@ void handle_icmp_error_verbose(void *recv_icmp_hdr, struct sockaddr_in *src_addr
     if (icmp_type != ICMP_ECHOREPLY) {
         *v = 1;
 
-        // printf("---- IP Header ----\n");
-        // printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n");
-        // #ifdef __APPLE__
-        //     printf(" %1x  %1x  %02x %04x %04x", ip_hdr->ip_v, ip_hdr->ip_hl, ip_hdr->ip_tos, ip_hdr->ip_len, ip_hdr->ip_id);
-        //     printf("   %1x %04x", ((ip_hdr->ip_off) & 0xe000) >> 13, (ip_hdr->ip_off) & 0x1fff);
-        //     printf("  %02x  %02x %04x", ip_hdr->ip_ttl, ip_hdr->ip_p, ip_hdr->ip_sum);
-        //     printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->ip_src));
-        //     printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->ip_dst));
-        // #else
-        //     printf(" %1x  %1x  %02x %04x %04x", ip_hdr->version, ip_hdr->ihl, ip_hdr->tos, ntohs(ip_hdr->tot_len), ntohs(ip_hdr->id));
-        //     printf("   %1x %04x", ((ip_hdr->frag_off) & 0xe000) >> 13, (ip_hdr->frag_off) & 0x1fff);
-        //     printf("  %02x  %02x %04x", ip_hdr->ttl, ip_hdr->protocol, ip_hdr->check);
-        //     printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->saddr));
-        //     printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->daddr));
-        // #endif
-        // printf("\n");
+        printf("---- IP Header ----\n");
+        printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n");
+        #ifdef __APPLE__
+            printf(" %1x  %1x  %02x %04x %04x", ip_hdr->ip_v, ip_hdr->ip_hl, ip_hdr->ip_tos, ip_hdr->ip_len, ip_hdr->ip_id);
+            printf("   %1x %04x", ((ip_hdr->ip_off) & 0xe000) >> 13, (ip_hdr->ip_off) & 0x1fff);
+            printf("  %02x  %02x %04x", ip_hdr->ip_ttl, ip_hdr->ip_p, ip_hdr->ip_sum);
+            printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->ip_src));
+            printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->ip_dst));
+        #else
+            printf(" %1x  %1x  %02x %04x %04x", ip_hdr->version, ip_hdr->ihl, ip_hdr->tos, ntohs(ip_hdr->tot_len), ntohs(ip_hdr->id));
+            printf("   %1x %04x", ((ip_hdr->frag_off) & 0xe000) >> 13, (ip_hdr->frag_off) & 0x1fff);
+            printf("  %02x  %02x %04x", ip_hdr->ttl, ip_hdr->protocol, ip_hdr->check);
+            printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->saddr));
+            printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->daddr));
+        #endif
+        printf("\n");
 
-        // // Afficher les informations d'en-tête ICMP
-        // printf("---- ICMP Header ----\n");
-        // printf("Type: %d\n", icmp_type);
-        // printf("Code: %d\n", icmp_code);
-        // printf("Checksum: %04x\n", ntohs(hdr->checksum));
+        // Afficher les informations d'en-tête ICMP
+        printf("---- ICMP Header ----\n");
+        printf("Type: %d\n", icmp_type);
+        printf("Code: %d\n", icmp_code);
+        #ifdef __APPLE__
+            printf("Checksum: %04x\n", ntohs(hdr->icmp_cksum));
+        #else
+            printf("Checksum: %04x\n", ntohs(hdr->checksum));
+        #endif
 
         switch (icmp_type) {
             case 3:  // Destination Unreachable
