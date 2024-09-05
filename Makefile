@@ -44,7 +44,7 @@ clear:
 						$(CLEAR)
 						
 $(NAME): 				$(OBJECTS)
-						@$(GCC) $(OBJECTS) -o $(NAME)
+						@$(GCC) $(OBJECTS) -o $(NAME) -lm
 						@echo "$(GREEN)[✓] $(NAME) created !$(DEFAULT)"
 						
 clean:					

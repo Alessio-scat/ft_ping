@@ -55,9 +55,16 @@ int main(int ac, char **av) {
     parse_command_line(ac, av, &destination, &verbose);
 
     int sockfd;//, verbose;
-    struct sockaddr_in dest_addr, src_addr; // IP Adress dest and src
-    struct icmphdr icmp_hdr, recv_icmp_hdr; // Build and Analyse packets ICMP
-    struct timeval start_time, end_time; // time
+    struct sockaddr_in dest_addr, src_addr;
+    #ifdef __APPLE__
+        struct icmp icmp_hdr, recv_icmp_hdr;
+    #else
+        struct icmphdr icmp_hdr, recv_icmp_hdr;
+    #endif
+    struct timeval start_time, end_time;
+    // struct sockaddr_in dest_addr, src_addr; // IP Adress dest and src
+    // struct icmphdr icmp_hdr, recv_icmp_hdr; // Build and Analyse packets ICMP
+    // struct timeval start_time, end_time; // time
     int sequence = 0;
     stats.packets_sent = 0;
     stats.packets_received = 0;
@@ -68,6 +75,9 @@ int main(int ac, char **av) {
     u_int8_t ttl;
     int recv_any_reply = 0;
     int v = 0;
+    // pid_t pid = getpid();
+    // pid = getpid();
+    // printf("GETPID() Main: %d\n", pid);
 
     check_root_privileges();
     sockfd = create_raw_socket();

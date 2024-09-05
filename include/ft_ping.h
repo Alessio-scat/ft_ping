@@ -7,8 +7,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <netinet/ip_icmp.h>  // to ICMP headers
-#include <netinet/ip.h>
+// #ifdef __APPLE__
+#include <netinet/ip_icmp.h>
+// #else
+// #include <netinet/ip_icmp.h>
+// #endif
+// #include <netinet/ip.h>
+// #ifdef __APPLE__
+#include <netinet/ip.h>  //IP header
+// #else
+// #include <netinet/ip.h>
+// #endif
 #include <unistd.h>
 #include <sys/time.h>
 #include <arpa/inet.h> // to inet_pton
@@ -16,38 +25,41 @@
 #include <netdb.h>
 #include "ft_ping_error.h"
 #include <errno.h>
+#include <signal.h>
 
-// Define struct icmphdr to macOS
-struct icmphdr {
-    u_int8_t type;
-    u_int8_t code;
-    u_int16_t checksum;
-    union {
-        struct {
-            u_int16_t id;
-            u_int16_t sequence;
-        } echo;
-        u_int32_t gateway;
-        struct {
-            u_int16_t unused_field;
-            u_int16_t mtu;
-        } frag;
-    } un;
-};
+// #ifdef __APPLE__
+// // Define struct icmphdr to macOS
+// struct icmphdr {
+//     u_int8_t type;
+//     u_int8_t code;
+//     u_int16_t checksum;
+//     union {
+//         struct {
+//             u_int16_t id;
+//             u_int16_t sequence;
+//         } echo;
+//         u_int32_t gateway;
+//         struct {
+//             u_int16_t unused_field;
+//             u_int16_t mtu;
+//         } frag;
+//     } un;
+// };
 
-// Define struct iphdr
-struct iphdr {
-    uint8_t ihl:4, version:4;
-    uint8_t tos;
-    uint16_t tot_len;
-    uint16_t id;
-    uint16_t frag_off;
-    uint8_t ttl;
-    uint8_t protocol;
-    uint16_t check;
-    uint32_t saddr;
-    uint32_t daddr;
-};
+// // Define struct iphdr
+// struct iphdr {
+//     uint8_t ihl:4, version:4;
+//     uint8_t tos;
+//     uint16_t tot_len;
+//     uint16_t id;
+//     uint16_t frag_off;
+//     uint8_t ttl;
+//     uint8_t protocol;
+//     uint16_t check;
+//     uint32_t saddr;
+//     uint32_t daddr;
+// };
+// #endif
 
 // Struct to stat PING 
 typedef struct {
@@ -76,9 +88,9 @@ void calculate_and_display_statistics(ping_stats_t *stats, int tv);
 /*
     icmp.c
 */
-void construct_icmp_echo_request(struct icmphdr *icmp_hdr, int sequence);
-void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, struct icmphdr *icmp_hdr);
-int receive_icmp_echo_reply(int sockfd, struct icmphdr *recv_icmp_hdr, struct sockaddr_in *src_addr, uint8_t *ttl);
+void construct_icmp_echo_request(void *icmp_hdr, int sequence);
+void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, void *icmp_hdr);
+int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in *src_addr, uint8_t *ttl);
 
 /*
     checksum.c
@@ -93,7 +105,7 @@ void parse_command_line(int ac, char **av, char **destination, int *verbose);
 /*
     verbose.c
 */
-void handle_icmp_error_verbose(struct icmphdr *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v);
+void handle_icmp_error_verbose(void *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v);
 
 
 /*
