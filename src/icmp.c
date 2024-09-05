@@ -1,5 +1,10 @@
 #include "../include/ft_ping.h"
 
+/*
+    htons() : convert octet network 
+    0xFFFF : do not execeed 16 bytes
+*/
+
 void construct_icmp_echo_request(void *icmp_hdr, int sequence)
 {
 #ifdef __APPLE__
