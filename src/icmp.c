@@ -119,6 +119,8 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
     #ifdef __APPLE__
         return (hdr->icmp_type == ICMP_ECHOREPLY) && (ntohs(hdr->icmp_id) == (getpid() & 0xFFFF));
     #else
+        if (hdr->type != ICMP_ECHOREPLY)
+            return 1;
         return (hdr->type == ICMP_ECHOREPLY) && (ntohs(hdr->un.echo.id) == (getpid() & 0xFFFF));
     #endif
 }
