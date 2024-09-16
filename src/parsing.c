@@ -68,6 +68,10 @@ void parse_command_line(int ac, char **av, char **destination, int *verbose) {
                     print_help();
                     break;
 
+                case '?':
+                    print_help();
+                    break;
+
                 default:
                     fprintf(stderr, ERR_INVALID_TOS, opt);
                     exit(EXIT_FAILURE);

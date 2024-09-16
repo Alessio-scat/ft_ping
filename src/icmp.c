@@ -63,6 +63,7 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
     socklen_t addr_len = sizeof(*src_addr);
     int bytes_received = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)src_addr, &addr_len);
     if (bytes_received < 0) {
+        printf("\n\n\n\n");
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             return 0;  // Timeout occurred
         } else {
@@ -79,7 +80,11 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
         memcpy(ip_hdr_copy, ip_hdr, sizeof(struct iphdr));
     #endif
 
+    #ifdef __APPLE__
         int ip_hdr_len = ip_hdr->ip_hl * 4;
+    #else
+        int ip_hdr_len = ip_hdr->ihl * 4;
+    #endif
 
     #ifdef __APPLE__
         struct icmp *hdr = (struct icmp *)(buffer + ip_hdr_len);
@@ -106,9 +111,14 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
     #endif
 
     if (received_checksum != calculated_checksum) {
+        printf("Hellloooo\n");
         fprintf(stderr, ERR_BAD_CHECKSUM);
         return -1;
     }
 
-    return (hdr->icmp_type == ICMP_ECHOREPLY) && (ntohs(hdr->icmp_id) == (getpid() & 0xFFFF));
+    #ifdef __APPLE__
+        return (hdr->icmp_type == ICMP_ECHOREPLY) && (ntohs(hdr->icmp_id) == (getpid() & 0xFFFF));
+    #else
+        return (hdr->type == ICMP_ECHOREPLY) && (ntohs(hdr->un.echo.id) == (getpid() & 0xFFFF));
+    #endif
 }
