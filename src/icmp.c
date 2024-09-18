@@ -111,7 +111,7 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
 
     if (received_checksum != calculated_checksum) {
         fprintf(stderr, ERR_BAD_CHECKSUM);
-        return 0;
+        return -1;
     }
 
     #ifdef __APPLE__
@@ -120,7 +120,7 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
                 return 1;
             else
                 return 0; 
-        else if (hdr->icmp_type == 8)
+        else if (hdr->icmp_type == 8) // localhost
             return 1;
         else if (hdr->icmp_type == 3 ||  hdr->icmp_type == 11 || hdr->icmp_type == 12 || hdr->icmp_type == 4 || hdr->icmp_type == 5)
             return -1;

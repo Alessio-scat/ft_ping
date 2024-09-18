@@ -61,6 +61,10 @@ void parse_command_line(int ac, char **av, char **destination, int *verbose) {
             opt = av[i][1];
             switch (opt) {
                 case 'v':
+                    if (av[i][2] != '\0'){
+                        print_help();
+                        exit(EXIT_FAILURE);
+                    }
                     *verbose = 1;
                     break;
 

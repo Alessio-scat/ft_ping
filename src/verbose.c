@@ -37,6 +37,7 @@ void handle_icmp_error_verbose(int activate_v, void *recv_icmp_hdr, struct socka
     #endif
 
     printf("%d\n", icmp_type);
+    (void)activate_v;
     if (icmp_type != ICMP_ECHOREPLY) {
         *v = 1;
 

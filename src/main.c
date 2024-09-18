@@ -126,10 +126,15 @@ int main(int ac, char **av) {
             printf("Request timeout for icmp_seq %d\n", sequence);
         }
         else
-            if (verbose)
+            if (verbose){
+                recv_any_reply = 2;
                 handle_icmp_error_verbose(1, &recv_icmp_hdr, &src_addr, sequence, &v, &ip_hdr_copy);
+            }
             else
+            {
+                recv_any_reply = 2;
                 handle_icmp_error_verbose(0, &recv_icmp_hdr, &src_addr, sequence, &v, &ip_hdr_copy);
+            }
                 // fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
 
         sequence++;
