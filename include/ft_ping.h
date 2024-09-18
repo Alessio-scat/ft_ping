@@ -68,7 +68,7 @@ void parse_command_line(int ac, char **av, char **destination, int *verbose);
 /*
     verbose.c
 */
-void handle_icmp_error_verbose(void *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v,
+void handle_icmp_error_verbose(int activate_v, void *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v,
                                 #ifdef __APPLE__
                                struct ip *ip_hdr
                                #else

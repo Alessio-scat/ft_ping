@@ -115,8 +115,9 @@ int main(int ac, char **av) {
             calculate_and_display_rtt_statistics(&start_time, &end_time, &stats);
             double rtt = calculate_and_display_rtt(&start_time, &end_time);
             recv_any_reply = 1;
-            // if (verbose)
-            //     handle_icmp_error_verbose(&recv_icmp_hdr, &src_addr, sequence, &v, ip_hdr_copy);
+
+            // if (result == 11)
+            //     printf("From %s icmp_seq=%d Time to live exceeded\n", destination, sequence);
             if (v == 0)
                 printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
         } 
@@ -126,9 +127,10 @@ int main(int ac, char **av) {
         }
         else
             if (verbose)
-                handle_icmp_error_verbose(&recv_icmp_hdr, &src_addr, sequence, &v, &ip_hdr_copy);
+                handle_icmp_error_verbose(1, &recv_icmp_hdr, &src_addr, sequence, &v, &ip_hdr_copy);
             else
-                fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
+                handle_icmp_error_verbose(0, &recv_icmp_hdr, &src_addr, sequence, &v, &ip_hdr_copy);
+                // fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
 
         sequence++;
         sleep(1);

@@ -111,14 +111,33 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
 
     if (received_checksum != calculated_checksum) {
         fprintf(stderr, ERR_BAD_CHECKSUM);
-        return -1;
+        return 0;
     }
 
     #ifdef __APPLE__
-        return (hdr->icmp_type == ICMP_ECHOREPLY) && (ntohs(hdr->icmp_id) == (getpid() & 0xFFFF));
-    #else
-        if (hdr->type != ICMP_ECHOREPLY)
+        if (hdr->icmp_type == ICMP_ECHOREPLY)
+            if (ntohs(hdr->icmp_id) == (getpid() & 0xFFFF))
+                return 1;
+            else
+                return 0; 
+        else if (hdr->icmp_type == 8)
             return 1;
-        return (hdr->type == ICMP_ECHOREPLY) && (ntohs(hdr->un.echo.id) == (getpid() & 0xFFFF));
+        else if (hdr->icmp_type == 3 ||  hdr->icmp_type == 11 || hdr->icmp_type == 12 || hdr->icmp_type == 4 || hdr->icmp_type == 5)
+            return -1;
+
+        // return (hdr->icmp_type == ICMP_ECHOREPLY) && (ntohs(hdr->icmp_id) == (getpid() & 0xFFFF));
+    #else
+        if (hdr->type == ICMP_ECHOREPLY)
+            if (ntohs(hdr->un.echo.id) == (getpid() & 0xFFFF))
+                return 1;
+            else
+                return 0;
+        else if (hdr->type == 8)
+            return 1;
+        else if (hdr->type == 3 ||  hdr->type == 11 || hdr->type == 12 || hdr->type == 4 || hdr->type == 5)
+            return -1;
+        // return (hdr->type == ICMP_ECHOREPLY) && (ntohs(hdr->un.echo.id) == (getpid() & 0xFFFF));
     #endif
+
+    return 0;
 }

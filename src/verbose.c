@@ -15,7 +15,7 @@ typedef struct icmp icmp_t;
 typedef struct icmphdr icmp_t;
 #endif
 
-void handle_icmp_error_verbose(void *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v,
+void handle_icmp_error_verbose(int activate_v, void *recv_icmp_hdr, struct sockaddr_in *src_addr, int sequence, int *v,
                                 #ifdef __APPLE__
                                struct ip *ip_hdr
                                #else
@@ -36,35 +36,39 @@ void handle_icmp_error_verbose(void *recv_icmp_hdr, struct sockaddr_in *src_addr
         icmp_code = hdr->code;
     #endif
 
+    printf("%d\n", icmp_type);
     if (icmp_type != ICMP_ECHOREPLY) {
         *v = 1;
 
-        printf("---- IP Header ----\n");
-        printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n");
-        #ifdef __APPLE__
-            printf(" %1x  %1x  %02x %04x %04x", ip_hdr->ip_v, ip_hdr->ip_hl, ip_hdr->ip_tos, ip_hdr->ip_len, ip_hdr->ip_id);
-            printf("   %1x %04x", ((ip_hdr->ip_off) & 0xe000) >> 13, (ip_hdr->ip_off) & 0x1fff);
-            printf("  %02x  %02x %04x", ip_hdr->ip_ttl, ip_hdr->ip_p, ip_hdr->ip_sum);
-            printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->ip_src));
-            printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->ip_dst));
-        #else
-            printf(" %1x  %1x  %02x %04x %04x", ip_hdr->version, ip_hdr->ihl, ip_hdr->tos, ntohs(ip_hdr->tot_len), ntohs(ip_hdr->id));
-            printf("   %1x %04x", ((ip_hdr->frag_off) & 0xe000) >> 13, (ip_hdr->frag_off) & 0x1fff);
-            printf("  %02x  %02x %04x", ip_hdr->ttl, ip_hdr->protocol, ip_hdr->check);
-            printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->saddr));
-            printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->daddr));
-        #endif
-        printf("\n");
+        if (activate_v == 1)
+        {
+            printf("---- IP Header ----\n");
+            printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n");
+            #ifdef __APPLE__
+                printf(" %1x  %1x  %02x %04x %04x", ip_hdr->ip_v, ip_hdr->ip_hl, ip_hdr->ip_tos, ip_hdr->ip_len, ip_hdr->ip_id);
+                printf("   %1x %04x", ((ip_hdr->ip_off) & 0xe000) >> 13, (ip_hdr->ip_off) & 0x1fff);
+                printf("  %02x  %02x %04x", ip_hdr->ip_ttl, ip_hdr->ip_p, ip_hdr->ip_sum);
+                printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->ip_src));
+                printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->ip_dst));
+            #else
+                printf(" %1x  %1x  %02x %04x %04x", ip_hdr->version, ip_hdr->ihl, ip_hdr->tos, ntohs(ip_hdr->tot_len), ntohs(ip_hdr->id));
+                printf("   %1x %04x", ((ip_hdr->frag_off) & 0xe000) >> 13, (ip_hdr->frag_off) & 0x1fff);
+                printf("  %02x  %02x %04x", ip_hdr->ttl, ip_hdr->protocol, ip_hdr->check);
+                printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->saddr));
+                printf(" %s ", inet_ntoa(*(struct in_addr *)&ip_hdr->daddr));
+            #endif
+            printf("\n");
 
-        // Afficher les informations d'en-tête ICMP
-        printf("---- ICMP Header ----\n");
-        printf("Type: %d\n", icmp_type);
-        printf("Code: %d\n", icmp_code);
-        #ifdef __APPLE__
-            printf("Checksum: %04x\n", ntohs(hdr->icmp_cksum));
-        #else
-            printf("Checksum: %04x\n", ntohs(hdr->checksum));
-        #endif
+            // Afficher les informations d'en-tête ICMP
+            printf("---- ICMP Header ----\n");
+            printf("Type: %d\n", icmp_type);
+            printf("Code: %d\n", icmp_code);
+            #ifdef __APPLE__
+                printf("Checksum: %04x\n", ntohs(hdr->icmp_cksum));
+            #else
+                printf("Checksum: %04x\n", ntohs(hdr->checksum));
+            #endif
+        }
 
         switch (icmp_type) {
             case 3:  // Destination Unreachable
