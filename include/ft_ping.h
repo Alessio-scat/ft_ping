@@ -26,6 +26,7 @@ typedef struct {
     double rtt_max;
     double rtt_total;
     double rtt_sum_of_squares;
+    double total_time;
 } ping_stats_t;
 
 /*

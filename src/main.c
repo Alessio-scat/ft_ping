@@ -70,7 +70,7 @@ int main(int ac, char **av) {
     #else
         struct icmphdr icmp_hdr, recv_icmp_hdr;
     #endif
-    struct timeval start_time, end_time;
+    struct timeval start_time, end_time, start_time_stat, end_time_stat;
     int sequence = 0;
     stats.packets_sent = 0;
     stats.packets_received = 0;
@@ -78,6 +78,7 @@ int main(int ac, char **av) {
     stats.rtt_max = 0;
     stats.rtt_total = 0;
     stats.rtt_sum_of_squares = 0;
+    stats.total_time = 0;
     u_int8_t ttl;
     int recv_any_reply = 0;
     int v = 0;
@@ -92,6 +93,7 @@ int main(int ac, char **av) {
 
     config_destination(destination, &dest_addr);
 
+    gettimeofday(&start_time_stat, NULL);
     printf("PING %s (%s): 56 data bytes\n", destination, inet_ntoa(dest_addr.sin_addr));
     signal(SIGINT, handle_interrupt); 
 
@@ -140,6 +142,10 @@ int main(int ac, char **av) {
         sequence++;
         sleep(1);
     }
+
+    gettimeofday(&end_time_stat, NULL);
+    stats.total_time = ((end_time_stat.tv_sec - start_time_stat.tv_sec) * 1000) + ((end_time_stat.tv_usec - start_time_stat.tv_usec) / 1000);
+    
 
     if (recv_any_reply == 1)
         calculate_and_display_statistics(&stats, 0);
