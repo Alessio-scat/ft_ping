@@ -38,7 +38,7 @@ void calculate_and_display_statistics(ping_stats_t *stats, int tv) {
            ((stats->packets_sent - stats->packets_received) / (double)stats->packets_sent) * 100,
             stats->total_time);
     if (tv == 0)
-        printf("round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n", stats->rtt_min, rtt_avg, stats->rtt_max, rtt_stddev);
+        printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", stats->rtt_min, rtt_avg, stats->rtt_max, rtt_stddev);
 }
 
 /*

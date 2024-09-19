@@ -71,7 +71,7 @@ int main(int ac, char **av) {
         struct icmphdr icmp_hdr, recv_icmp_hdr;
     #endif
     struct timeval start_time, end_time, start_time_stat, end_time_stat;
-    int sequence = 0;
+    int sequence = 1;
     stats.packets_sent = 0;
     stats.packets_received = 0;
     stats.rtt_min = -1;
