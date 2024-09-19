@@ -33,7 +33,7 @@ void calculate_and_display_statistics(ping_stats_t *stats, int tv) {
     double rtt_stddev = sqrt((stats->rtt_sum_of_squares / stats->packets_received) - (rtt_avg * rtt_avg));
 
     printf("\n--- Ping statistics ---\n");
-    printf("%d packets transmitted, %d packets received, %.1f%% packet loss, %.4g ms\n",
+    printf("%d packets transmitted, %d packets received, %.1f%% packet loss, %.0f ms\n",
            stats->packets_sent, stats->packets_received,
            ((stats->packets_sent - stats->packets_received) / (double)stats->packets_sent) * 100,
             stats->total_time);
