@@ -11,7 +11,7 @@ int create_raw_socket()
     }
 
     /*
-        Set a timeout for recvfrom (1 seconds)
+        Set a timeout for recvfrom (2 seconds)
         define a time before timeout 
     */
     struct timeval timeout;
@@ -34,17 +34,14 @@ int create_raw_socket()
     return sockfd;
 }
 
-/*
-    getaddrinfo : resolve domain in IP adress
-*/
 void config_destination(char *hostname, struct sockaddr_in *dest_addr)
 {
     struct addrinfo hints, *res;
     int errcode;
 
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET; // IPv4 only
-    hints.ai_socktype = SOCK_RAW; // Raw socket
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_RAW;
 
     errcode = getaddrinfo(hostname, NULL, &hints, &res);
     if (errcode != 0) {
@@ -52,9 +49,8 @@ void config_destination(char *hostname, struct sockaddr_in *dest_addr)
         exit(EXIT_FAILURE);
     }
 
-    // Copy the resolved address to dest_addr
     memcpy(dest_addr, res->ai_addr, res->ai_addrlen);
-    freeaddrinfo(res); // Free the linked list
+    freeaddrinfo(res);
 }
 
 int main(int ac, char **av) {
@@ -118,8 +114,6 @@ int main(int ac, char **av) {
             double rtt = calculate_and_display_rtt(&start_time, &end_time);
             recv_any_reply = 1;
 
-            // if (result == 11)
-            //     printf("From %s icmp_seq=%d Time to live exceeded\n", destination, sequence);
             if (v == 0)
                 printf("64 bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n", destination, sequence, ttl, rtt);
         } 
@@ -137,7 +131,6 @@ int main(int ac, char **av) {
                 recv_any_reply = 2;
                 handle_icmp_error_verbose(0, &recv_icmp_hdr, &src_addr, sequence, &v, &ip_hdr_copy);
             }
-                // fprintf(stderr, ERR_RECEIVING_ICMP_PACKET, strerror(errno));
 
         sequence++;
         sleep(1);
@@ -159,43 +152,3 @@ int main(int ac, char **av) {
     close(sockfd);
     return g_status;
 }
-
-
-/*
-    Step1 : Create Raw socket
-
-        - Create raw socket that allow to send and receive ICMP packets
-        - Verify to execute this to be privilege root
-
-    Step2 : Build Message ICMP ECHO Request
-
-        - Create a fuction that build a packet ICMP ECHO Request
-        - Include fields : Type, Code, Checksum, Identifier, Sequence Number and Data
-        - Calculate the checksum carefully, because it's very important
-
-    Step3 : Send message ICMP
-
-        - Use the raw socket to send packet ICMP ECHO Request to target ip
-        - Manage error if the send fail
-
-    Step4 : Receive Response ICMP ECHO Reply
-
-        - Implement reception packets ICMP ECHO Reply
-        - Verify if the checksum is ok
-        - Verify if the responde correspond the request send used fields Identifier and Sequence Number
-        - if the message Echo Reply is not receive, manage this 
-
-    Step5 : Calculate and Display RTT
-
-        - Share time before to send ECHO Request
-        - When I receive ECHO Reply, calcule the difference to obtain RTT
-        - Display thi RTT for each responses
-
-    Step6 : Manage Option 
-
-        - -v : Verbose mode 
-        - -? : Displah help
-
-    Step7 : Bonus...
-
-*/

@@ -46,3 +46,4 @@
 #define ERR_INVALID_DESTINATION "Error: Invalid destination '%s'. Must be a valid IPv4 address or a FQDN.\n"
 
 #endif
+

@@ -1,10 +1,5 @@
 #include "../include/ft_ping.h"
 
-/*
-    htons() : convert octet network byte order => understand all network
-    0xFFFF : do not execeed 16 bytes
-*/
-
 void construct_icmp_echo_request(void *icmp_hdr, int sequence)
 {
 #ifdef __APPLE__
@@ -26,11 +21,6 @@ void construct_icmp_echo_request(void *icmp_hdr, int sequence)
 #endif
 }
 
-/*
-    sendto : send data throught socket 
-        - 0 : No flag
-*/
-
 void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, void *icmp_hdr)
 {
 #ifdef __APPLE__
@@ -42,14 +32,6 @@ void send_icmp_echo_request(int sockfd, struct sockaddr_in *dest_addr, void *icm
         exit(EXIT_FAILURE);
     }
 }
-
-
-/*
-    @buffer : stock temporary data of network
-    @addr_len : stock len struct sockaddr_in
-
-    ignore the IP header (which is always present in a network packet) and concentrate solely on the ICMP header
-*/
 
 int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in *src_addr, uint8_t *ttl, 
                              #ifdef __APPLE__
@@ -120,12 +102,11 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
                 return 1;
             else
                 return 0; 
-        else if (hdr->icmp_type == 8) // localhost
+        else if (hdr->icmp_type == 8)
             return 1;
         else if (hdr->icmp_type == 3 ||  hdr->icmp_type == 11 || hdr->icmp_type == 12 || hdr->icmp_type == 4 || hdr->icmp_type == 5)
             return -1;
 
-        // return (hdr->icmp_type == ICMP_ECHOREPLY) && (ntohs(hdr->icmp_id) == (getpid() & 0xFFFF));
     #else
         if (hdr->type == ICMP_ECHOREPLY)
             if (ntohs(hdr->un.echo.id) == (getpid() & 0xFFFF))
@@ -136,7 +117,6 @@ int receive_icmp_echo_reply(int sockfd, void *recv_icmp_hdr, struct sockaddr_in 
             return 1;
         else if (hdr->type == 3 ||  hdr->type == 11 || hdr->type == 12 || hdr->type == 4 || hdr->type == 5)
             return -1;
-        // return (hdr->type == ICMP_ECHOREPLY) && (ntohs(hdr->un.echo.id) == (getpid() & 0xFFFF));
     #endif
 
     return 0;

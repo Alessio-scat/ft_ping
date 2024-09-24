@@ -58,7 +58,6 @@ void handle_icmp_error_verbose(int activate_v, void *recv_icmp_hdr, struct socka
             #endif
             printf("\n");
 
-            // Afficher les informations d'en-tête ICMP
             printf("---- ICMP Header ----\n");
             printf("Type: %d\n", icmp_type);
             printf("Code: %d\n", icmp_code);

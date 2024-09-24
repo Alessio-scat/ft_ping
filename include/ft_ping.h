@@ -1,17 +1,17 @@
 #ifndef FT_PING_H
 #define FT_PING_H
 
-#include <stdint.h>  // To types u_int8_t, u_int16_t, etc...
+#include <stdint.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/ip_icmp.h>
-#include <netinet/ip.h>  //IP header
+#include <netinet/ip.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include <arpa/inet.h> // to inet_pton
+#include <arpa/inet.h>
 #include <regex.h>
 #include <netdb.h>
 #include "ft_ping_error.h"
@@ -29,9 +29,6 @@ typedef struct {
     double total_time;
 } ping_stats_t;
 
-/*
-    @extern : les variables sont déclarer ailleurs 
-*/
 extern volatile int running;
 extern ping_stats_t stats;
 extern int g_status;

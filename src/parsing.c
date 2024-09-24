@@ -11,26 +11,18 @@ void print_help()
     exit(EXIT_SUCCESS);
 }
 
-/*
-    1 : Ip ok
-    0 : Ip invalid
-    -1 : error
-*/
-
 int is_valid_ipv4(const char *ip)
 {
     struct sockaddr_in sa;
     int result = inet_pton(AF_INET, ip, &(sa.sin_addr));
 
     if (result == 1)
-        return 1; // IP valid
+        return 1;
     else    
         return 0;
 }
 
 int is_valid_hostname(const char *hostname) {
-
-    // Regular expression for validating FQDNs
 
     const char *regex_pattern = "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
     regex_t regex;
@@ -46,7 +38,7 @@ int is_valid_hostname(const char *hostname) {
     regfree(&regex);
     
     if (ret == 0)
-        return 1; //Ip valid
+        return 1;
     else
         return 0;
 

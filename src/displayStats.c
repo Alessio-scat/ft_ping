@@ -1,9 +1,5 @@
 #include "../include/ft_ping.h"
 
-/*
-    Definition here
-    @volatile : value must changed
-*/
 volatile int running = 1;
 ping_stats_t stats;
 
@@ -40,24 +36,3 @@ void calculate_and_display_statistics(ping_stats_t *stats, int tv) {
     if (tv == 0)
         printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", stats->rtt_min, rtt_avg, stats->rtt_max, rtt_stddev);
 }
-
-/*
-    1. Titre :
-        --- Ping statistics ---
-            - Ce titre indique que les informations suivantes sont un résumé des statistiques de l'opération ping.
-    
-    2. Statistiques des Paquets :
-        X packets transmitted
-            - Nombre total de paquets ICMP Echo Request envoyés à la destination.
-        Y packets received
-            - Nombre total de paquets ICMP Echo Reply reçus en réponse aux requêtes envoyées.
-        Z% packet loss
-            - Pourcentage de paquets perdus. C'est le ratio de paquets envoyés qui n'ont pas reçu de réponse. Un taux de 0.0% indique que tous les paquets envoyés ont été reçus.
-    
-    3. Temps de Réponse Aller-Retour (RTT) :
-        round-trip min/avg/max/stddev = A/B/C/D ms
-            - min : Le temps de réponse minimum enregistré pour un paquet.
-            - avg : Le temps de réponse moyen calculé pour tous les paquets reçus.
-            - max : Le temps de réponse maximum enregistré pour un paquet.
-            - stddev : L'écart-type des temps de réponse, mesurant la variation autour de la moyenne. Un écart-type faible indique des temps de réponse cohérents.
-*/
